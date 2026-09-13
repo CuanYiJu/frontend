@@ -300,18 +300,20 @@ h2 {
 }
 
 /* ─── detail ─────────────────────────────────────────── */
-.info {
+/* Fact list on the event page (label / value). Not ".info": that name is a
+   banner variant and the two used to collide. */
+.facts {
   display: grid;
   grid-template-columns: 4.5em 1fr;
   gap: 8px 12px;
   margin: 12px 0;
 }
 
-.info dt {
+.facts dt {
   color: var(--muted);
 }
 
-.info dd {
+.facts dd {
   margin: 0;
 }
 

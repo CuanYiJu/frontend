@@ -86,7 +86,7 @@ export function EventDetailPage() {
           <div className="banner info">这个局已经结束了。</div>
         ) : null}
 
-        <dl className="info">
+        <dl className="facts">
           <dt>时间</dt>
           <dd>
             {rel ? `${rel} · ` : ''}
