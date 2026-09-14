@@ -12,7 +12,8 @@ npm run dev        # http://localhost:5173
 The dev server proxies `/api` and `/auth` to the backend at `http://localhost:8787` (override with `BACKEND_URL`), so start [`../backend`](../backend) first. Login emails are printed in the backend terminal during development; copy the 6-digit code into the login page.
 
 ```bash
-npm run check      # tsc + production build → dist/
+npm test           # Vitest + Testing Library (jsdom, fetch stubbed): format helpers, badges, API error mapping, login and onboarding states
+npm run check      # tsc + tests + production build → dist/
 ```
 
 ## Pages

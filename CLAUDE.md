@@ -12,4 +12,4 @@ Skills (read by path when Claude was started here rather than in `site/`): `../.
 - Styling is one file, `src/styles.css`, with CSS variables; reuse `.card`, `.banner.{info,ok,warn,error}`, `.btn.{primary,secondary,danger,small,block}`, `.badge.*`, `.field`, `.people`, `.facts`. Test at 375px.
 - Dates only through `src/format.ts`.
 - `index.html` carries the Google tag, guarded to the `juer.now` hostname; keep the guard.
-- No unit tests yet (see `../BACKLOG.md`); `npm run check` = tsc + build. The build output `dist/` is what the backend's deploy script uploads.
+- Tests: Vitest + Testing Library in jsdom, `npm test` (or `npm run check` = tsc + tests + build). `src/test/helpers.tsx` gives `stubFetch()` (route table for the API), `renderAt()` (router wrapper) and `profile()` / `event()` fixtures; pages that use `useSession()` mock `../session` (see `Onboarding.test.tsx`). Cover rendering decisions and copy; business rules are tested in the backend. The build output `dist/` is what the backend's deploy script uploads.
