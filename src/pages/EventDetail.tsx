@@ -4,6 +4,8 @@ import { ApiError, api, type EventDetail } from '../api';
 import { KindBadge, Seats, StatusBadge } from '../components/EventCard';
 import { ErrorBanner } from '../components/Field';
 import { formatDate, formatDuration, formatTimeRange, relativeDay } from '../format';
+import { AdminModeToggle } from '../components/AdminModeToggle';
+import { useAdminMode } from '../adminMode';
 
 export function EventDetailPage() {
   const { id = '' } = useParams();
@@ -12,6 +14,7 @@ export function EventDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [adminMode] = useAdminMode();
 
   const load = useCallback(async () => {
     try {
@@ -23,7 +26,7 @@ export function EventDetailPage() {
 
   useEffect(() => {
     void load();
-  }, [load]);
+  }, [load, adminMode]); // canManage depends on 群主模式
 
   const run = async <T extends { event: EventDetail }>(fn: () => Promise<T>, done?: (r: T) => string | null) => {
     setBusy(true);
@@ -145,6 +148,8 @@ export function EventDetailPage() {
             </button>
           </div>
         )}
+
+        <AdminModeToggle compact />
 
         {event.canManage && event.status === 'open' ? (
           <div className="row" style={{ gap: 10 }}>

@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { ApiError, api } from './api';
+import { setAdminMode } from './adminMode';
 import { jsonResponse, stubFetch } from './test/helpers';
 
 describe('api error mapping', () => {
@@ -31,6 +32,19 @@ describe('api error mapping', () => {
     await expect(api.logout()).resolves.toBeUndefined();
     expect(calls[0]).toMatchObject({ method: 'POST', path: '/auth/logout', body: {} });
     expect(fn.mock.calls[0]?.[1]).toMatchObject({ credentials: 'same-origin', headers: { 'Content-Type': 'application/json' } });
+  });
+
+  test('群主模式 adds the X-Admin-Mode header to every request, and only then', async () => {
+    const { fn } = stubFetch({ 'GET /api/events': jsonResponse({ events: [] }) });
+    await api.listEvents('upcoming');
+    expect((fn.mock.calls[0]?.[1]?.headers as Record<string, string>)['X-Admin-Mode']).toBeUndefined();
+    setAdminMode(true);
+    try {
+      await api.listEvents('upcoming');
+      expect((fn.mock.calls[1]?.[1]?.headers as Record<string, string>)['X-Admin-Mode']).toBe('1');
+    } finally {
+      setAdminMode(false);
+    }
   });
 
   test('verifyCode only sends `next` when there is one', async () => {

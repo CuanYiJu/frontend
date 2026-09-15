@@ -10,7 +10,8 @@
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
-      if (location.hostname === 'juer.now') {
+      // Production host only, and never an automated browser (Playwright sets navigator.webdriver).
+      if (location.hostname === 'juer.now' && !navigator.webdriver) {
         var ga = document.createElement('script');
         ga.async = true;
         ga.src = 'https://www.googletagmanager.com/gtag/js?id=G-DB78XHWQ7Y';

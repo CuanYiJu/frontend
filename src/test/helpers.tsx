@@ -44,6 +44,7 @@ export const profile = (over: Partial<Profile> = {}): Profile => ({
   userId: 'u1',
   nickname: '小明',
   wechatName: '小明🎲',
+  greeting: null,
   bio: null,
   status: 'active',
   reviewNote: null,

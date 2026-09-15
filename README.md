@@ -21,13 +21,13 @@ npm run check      # tsc + tests + production build → dist/
 | Path | What |
 |---|---|
 | `/login` | Email → magic link / 6-digit code. Shows a hint inside WeChat's browser. |
-| `/onboarding` | First login: your WeChat name (checked against the admin's member list), site nickname. Also the waiting / rejected page while an unlisted name is in the approval queue. |
+| `/onboarding` | First login: WeChat name, site nickname and a 打招呼; then the waiting page until an admin approves, or the rejected / removed page with the admin's note and a re-apply button. Admins get a plain profile form. |
 | `/` | Search bar (title, games, description, location, host and participant names; past events only those you attended), then upcoming 局 with tabs 即将开始 / 我参与的 / 已结束 and a 固定局 / 临时局 filter. |
 | `/events/new` | Post a 局: 临时局 (once) or 固定局 (weekly, N weeks). |
 | `/events/:id` | Details, participants and waitlist, 报名 / 加入候补 / 退出, 复制分享 text for the group chat. Host: 编辑, 取消, remove a player. |
 | `/events/:id/edit` | Host edits one occurrence. |
 | `/me` | Profile edit, my upcoming 局, logout. |
-| `/admin` | Admins only: add a member directly by email, approve or reject pending newcomers, paste group members' WeChat names, see who has registered, remove unused names. Admins also get the host controls on every event page. |
+| `/admin` | Admins only: review applications (with the greeting), 群主模式 switch, add a member by email, the members list with 移出. With 群主模式 on, event pages show the host controls to admins too. |
 
 `src/api.ts` is the whole contract with the backend; its types mirror `backend/src/services/*.ts`.
 

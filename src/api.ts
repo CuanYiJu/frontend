@@ -1,18 +1,21 @@
 /** Types mirror site/backend/src/services/*.ts. Keep them in sync by hand for now. */
+import { isAdminMode } from './adminMode';
 
 export interface User {
   id: string;
   email: string;
 }
 
-/** pending = waiting for the admin (name not on the list); rejected = admin said no, may resubmit. */
-export type ProfileStatus = 'pending' | 'active' | 'rejected';
+/** pending = waiting for the admin; rejected / removed = admin said no, may apply again. */
+export type ProfileStatus = 'pending' | 'active' | 'rejected' | 'removed';
 
 export interface Profile {
   userId: string;
   nickname: string;
   /** The member's WeChat name. Fixed once active. */
   wechatName: string;
+  /** The 打招呼 they applied with. */
+  greeting: string | null;
   bio: string | null;
   status: ProfileStatus;
   reviewNote: string | null;
@@ -24,8 +27,18 @@ export interface ApprovalRequest {
   userId: string;
   nickname: string;
   wechatName: string;
+  greeting: string | null;
   email: string;
   requestedAt: string;
+}
+
+export interface Member {
+  userId: string;
+  nickname: string;
+  wechatName: string;
+  email: string;
+  joinedAt: string;
+  isAdmin: boolean;
 }
 
 export type EventKind = 'regular' | 'adhoc';
@@ -54,7 +67,7 @@ export interface EventSummary {
   waitlistCount: number;
   myStatus: RegistrationStatus | null;
   isHost: boolean;
-  /** Host or admin: may edit, cancel, remove players. */
+  /** Host, or admin in 群主模式: may edit, cancel, remove players. */
   canManage: boolean;
   isPast: boolean;
 }
@@ -86,14 +99,6 @@ export interface EventInput {
 
 export type ListScope = 'upcoming' | 'past' | 'mine';
 
-export interface InviteName {
-  id: string;
-  name: string;
-  createdAt: string;
-  claimedBy: { userId: string; nickname: string } | null;
-  claimedAt: string | null;
-}
-
 export class ApiError extends Error {
   readonly status: number;
   readonly code: string;
@@ -106,10 +111,16 @@ export class ApiError extends Error {
   }
 }
 
+/** Sent while 群主模式 is on; the backend only honours it for admins. */
+export const ADMIN_MODE_HEADER = 'X-Admin-Mode';
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  const headers: Record<string, string> = {};
+  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  if (isAdminMode()) headers[ADMIN_MODE_HEADER] = '1';
   const res = await fetch(path, {
     method,
-    headers: body === undefined ? {} : { 'Content-Type': 'application/json' },
+    headers,
     body: body === undefined ? undefined : JSON.stringify(body),
     credentials: 'same-origin',
   });
@@ -132,16 +143,20 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
 export const api = {
   me: () => request<{ user: User; profile: Profile | null; isAdmin: boolean; pendingRequests: number }>('GET', '/api/me'),
-  saveProfile: (input: { nickname: string; wechatName?: string | null; bio?: string | null }) =>
+  saveProfile: (input: { nickname: string; wechatName?: string | null; greeting?: string | null; bio?: string | null }) =>
     request<{ profile: Profile }>('PUT', '/api/profile', input),
-  listInviteNames: () => request<{ names: InviteName[] }>('GET', '/api/admin/invite-names'),
-  addInviteNames: (names: string) => request<{ added: InviteName[]; duplicates: string[] }>('POST', '/api/admin/invite-names', { names }),
-  removeInviteName: (id: string) => request<void>('DELETE', `/api/admin/invite-names/${id}`),
-  listRequests: () => request<{ requests: ApprovalRequest[] }>('GET', '/api/admin/requests'),
+
+  // admin: membership
+  listMembers: () => request<{ members: Member[] }>('GET', '/api/admin/members'),
   addMember: (input: { email: string; wechatName: string; nickname?: string | null }) =>
     request<{ profile: Profile; email: string; created: boolean }>('POST', '/api/admin/members', input),
+  removeMember: (userId: string, note: string | null) =>
+    request<{ profile: Profile; cancelledEvents: number; withdrawnFrom: number }>('DELETE', `/api/admin/members/${userId}`, { note }),
+  listRequests: () => request<{ requests: ApprovalRequest[] }>('GET', '/api/admin/requests'),
   approveRequest: (userId: string) => request<{ profile: Profile }>('POST', `/api/admin/requests/${userId}/approve`, {}),
   rejectRequest: (userId: string, note: string | null) => request<{ profile: Profile }>('POST', `/api/admin/requests/${userId}/reject`, { note }),
+
+  // events
   listEvents: (scope: ListScope) => request<{ events: EventSummary[] }>('GET', `/api/events?scope=${scope}`),
   searchEvents: (q: string) => request<{ events: EventSummary[] }>('GET', `/api/events/search?q=${encodeURIComponent(q)}`),
   getEvent: (id: string) => request<{ event: EventDetail }>('GET', `/api/events/${id}`),

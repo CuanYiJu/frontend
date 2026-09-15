@@ -12,6 +12,7 @@ export function OnboardingPage() {
   const [editing, setEditing] = useState(false);
   const [wechatName, setWechatName] = useState(profile?.wechatName ?? '');
   const [nickname, setNickname] = useState(profile?.nickname ?? '');
+  const [greeting, setGreeting] = useState(profile?.greeting ?? '');
   const [nicknameTouched, setNicknameTouched] = useState(!!profile);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +24,7 @@ export function OnboardingPage() {
     setBusy(true);
     setError(null);
     try {
-      const { profile: saved } = await api.saveProfile({ nickname: nickname.trim(), wechatName: wechatName.trim() });
+      const { profile: saved } = await api.saveProfile({ nickname: nickname.trim(), wechatName: wechatName.trim(), greeting: greeting.trim() || null });
       setProfile(saved);
       setEditing(false);
       if (saved.status === 'active') navigate(next, { replace: true });
@@ -43,23 +44,25 @@ export function OnboardingPage() {
     }
   };
 
-  // Waiting for, or turned down by, the admin.
+  // Waiting for, turned down by, or removed by the admin.
   if (profile && !editing) {
     const pending = profile.status === 'pending';
+    const removed = profile.status === 'removed';
     return (
       <div className="card" style={{ marginTop: 24 }}>
-        <h1>{pending ? '等群主审核' : '申请没有通过'}</h1>
+        <h1>{pending ? '等群主审核' : removed ? '你已被移出' : '申请没有通过'}</h1>
         {pending ? (
           <>
-            <div className="banner info">
-              名单里没有「{profile.wechatName}」，已经把你的申请交给群主了。通过后就能进来，可以在群里提醒群主一下。
-            </div>
+            <div className="banner info">已经把你的申请交给群主了。通过后就能进来，可以在群里提醒群主一下。</div>
             <p className="muted small">
-              提交的微信名：<strong>{profile.wechatName}</strong>，站内昵称：<strong>{profile.nickname}</strong>
+              微信名：<strong>{profile.wechatName}</strong>，站内昵称：<strong>{profile.nickname}</strong>
             </p>
+            {profile.greeting ? <p className="muted small">你的招呼：{profile.greeting}</p> : null}
           </>
+        ) : removed ? (
+          <div className="banner warn">群主把你移出了{profile.reviewNote ? `：${profile.reviewNote}` : '。'}如果是误会，可以重新打个招呼申请。</div>
         ) : (
-          <div className="banner warn">群主没有通过{profile.reviewNote ? `：${profile.reviewNote}` : '。'}如果填错了名字，可以改一下重新提交。</div>
+          <div className="banner warn">群主没有通过{profile.reviewNote ? `：${profile.reviewNote}` : '。'}可以改一下再重新申请。</div>
         )}
         <div className="actions">
           {pending ? (
@@ -68,7 +71,7 @@ export function OnboardingPage() {
             </button>
           ) : null}
           <button className="btn secondary" onClick={() => setEditing(true)}>
-            改名字重新提交
+            {pending ? '改一下重新提交' : '重新申请'}
           </button>
         </div>
         <p className="center">
@@ -89,14 +92,14 @@ export function OnboardingPage() {
 
   return (
     <div className="card" style={{ marginTop: 24 }}>
-      <h1>完善资料</h1>
+      <h1>{isAdmin ? '完善资料' : '打个招呼'}</h1>
       <p className="muted">
-        已登录 <strong>{user?.email}</strong>。这个站只对群里的朋友开放：
-        {isAdmin ? '你是群主，直接填就行。' : '填你的微信名，和群主录入的名单对上就直接进；对不上会交给群主审核。'}
+        已登录 <strong>{user?.email}</strong>。
+        {isAdmin ? '你是群主，填好就能进。' : '这个站只对群里的朋友开放：填一下你是谁，群主看过就放你进来。'}
       </p>
       <ErrorBanner message={error} />
       <form onSubmit={submit}>
-        <Field label="微信名" hint="微信「我」页面顶部显示的名字（微信昵称），不是你在群里改的群昵称。有表情符号也要一起填。">
+        <Field label="微信名" hint="微信「我」页面顶部显示的名字（微信昵称），方便群主对上号。">
           <input
             value={wechatName}
             onChange={(e) => {
@@ -120,6 +123,9 @@ export function OnboardingPage() {
             required
           />
         </Field>
+        <Field label={isAdmin ? '打个招呼（可选）' : '打个招呼'} hint="一两句就行：你是群里的谁、常玩什么，让群主认得出你。">
+          <textarea value={greeting} onChange={(e) => setGreeting(e.target.value)} maxLength={300} required={!isAdmin} placeholder="我是群里的小明，常玩德式，周末有空。" />
+        </Field>
         <div className="actions" style={{ margin: 0 }}>
           {profile ? (
             <button type="button" className="btn secondary" onClick={() => setEditing(false)} disabled={busy}>
@@ -127,7 +133,7 @@ export function OnboardingPage() {
             </button>
           ) : null}
           <button className="btn primary" disabled={busy}>
-            {busy ? '保存中…' : profile ? '重新提交' : '进入桌游群'}
+            {busy ? '提交中…' : isAdmin ? '进入桌游群' : profile ? '重新提交' : '提交申请'}
           </button>
         </div>
       </form>
