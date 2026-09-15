@@ -175,6 +175,7 @@ export function EventDetailPage() {
                 <button
                   className="btn icon"
                   title="移出名单"
+                  aria-label="移出名单"
                   disabled={busy}
                   onClick={() => {
                     if (!window.confirm(`把 ${p.nickname} 移出名单？`)) return;
@@ -207,6 +208,7 @@ export function EventDetailPage() {
                     <button
                       className="btn icon"
                       title="移出候补"
+                      aria-label="移出候补"
                       disabled={busy}
                       onClick={() => {
                         if (!window.confirm(`把 ${p.nickname} 移出候补？`)) return;

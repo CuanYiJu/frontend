@@ -27,13 +27,13 @@ export function AdminPage() {
     void load();
   }, []);
 
-  const act = async (fn: () => Promise<unknown>, done: string) => {
+  const act = async <T,>(fn: () => Promise<T>, done: string | ((result: T) => string)) => {
     setBusy(true);
     setError(null);
     setNotice(null);
     try {
-      await fn();
-      setNotice(done);
+      const result = await fn();
+      setNotice(typeof done === 'function' ? done(result) : done);
       await load();
       await refresh(); // nav badge
     } catch (err) {
@@ -46,11 +46,14 @@ export function AdminPage() {
   const add = async (e: FormEvent) => {
     e.preventDefault();
     const names = text;
-    await act(async () => {
-      const r = await api.addInviteNames(names);
-      setText('');
-      setNotice(`加了 ${r.added.length} 个${r.duplicates.length ? `，${r.duplicates.length} 个已经在名单里：${r.duplicates.join('、')}` : '。'}`);
-    }, '');
+    await act(
+      async () => {
+        const r = await api.addInviteNames(names);
+        setText('');
+        return r;
+      },
+      (r) => `加了 ${r.added.length} 个${r.duplicates.length ? `，${r.duplicates.length} 个已经在名单里：${r.duplicates.join('、')}` : '。'}`,
+    );
   };
 
   const remove = (n: InviteName) => {
@@ -132,7 +135,7 @@ export function AdminPage() {
                 {n.name}
                 <span className="wx">加于 {formatDate(n.createdAt)}</span>
               </span>
-              <button className="btn icon" title="去掉" disabled={busy} onClick={() => remove(n)}>
+              <button className="btn icon" title="去掉" aria-label="去掉" disabled={busy} onClick={() => remove(n)}>
                 ✕
               </button>
             </li>
