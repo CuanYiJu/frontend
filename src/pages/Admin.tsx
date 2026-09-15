@@ -9,6 +9,7 @@ export function AdminPage() {
   const [names, setNames] = useState<InviteName[] | null>(null);
   const [requests, setRequests] = useState<ApprovalRequest[] | null>(null);
   const [text, setText] = useState('');
+  const [member, setMember] = useState({ email: '', wechatName: '', nickname: '' });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -53,6 +54,19 @@ export function AdminPage() {
         return r;
       },
       (r) => `加了 ${r.added.length} 个${r.duplicates.length ? `，${r.duplicates.length} 个已经在名单里：${r.duplicates.join('、')}` : '。'}`,
+    );
+  };
+
+  const addDirect = async (e: FormEvent) => {
+    e.preventDefault();
+    const input = { email: member.email.trim(), wechatName: member.wechatName.trim(), nickname: member.nickname.trim() || null };
+    await act(
+      async () => {
+        const r = await api.addMember(input);
+        setMember({ email: '', wechatName: '', nickname: '' });
+        return r;
+      },
+      (r) => `已加入 ${r.profile.nickname}（${r.email}）。用这个邮箱登录就能直接进来。`,
     );
   };
 
@@ -105,6 +119,25 @@ export function AdminPage() {
           </div>
         </>
       ) : null}
+
+      <h2>直接加人</h2>
+      <p className="muted small">知道对方邮箱的话，直接加成成员：对方用这个邮箱登录就进来了，不用填微信名，也不用审核。</p>
+      <div className="card">
+        <form onSubmit={addDirect}>
+          <Field label="邮箱">
+            <input type="email" value={member.email} onChange={(e) => setMember({ ...member, email: e.target.value })} inputMode="email" autoComplete="off" required />
+          </Field>
+          <Field label="对方的微信名">
+            <input value={member.wechatName} onChange={(e) => setMember({ ...member, wechatName: e.target.value })} maxLength={40} required />
+          </Field>
+          <Field label="站内昵称（可选）" hint="不填就用微信名。">
+            <input value={member.nickname} onChange={(e) => setMember({ ...member, nickname: e.target.value })} maxLength={20} />
+          </Field>
+          <button className="btn primary block" disabled={busy || !member.email.trim() || !member.wechatName.trim()}>
+            {busy ? '保存中…' : '加为成员'}
+          </button>
+        </form>
+      </div>
 
       <h2>加名字</h2>
       <p className="muted small">

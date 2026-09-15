@@ -74,6 +74,7 @@ export const event = (over: Partial<EventSummary> = {}): EventSummary => ({
   waitlistCount: 0,
   myStatus: null,
   isHost: false,
+  canManage: false,
   isPast: false,
   ...over,
 });

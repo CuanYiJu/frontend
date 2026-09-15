@@ -42,8 +42,8 @@ export function EventFormPage({ mode }: { mode: 'create' | 'edit' }) {
     api
       .getEvent(id)
       .then(({ event }) => {
-        if (!event.isHost) {
-          setError('只有组织者可以编辑。');
+        if (!event.canManage) {
+          setError('只有组织者或群主可以编辑。');
           return;
         }
         setForm({

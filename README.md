@@ -27,7 +27,7 @@ npm run check      # tsc + tests + production build → dist/
 | `/events/:id` | Details, participants and waitlist, 报名 / 加入候补 / 退出, 复制分享 text for the group chat. Host: 编辑, 取消, remove a player. |
 | `/events/:id/edit` | Host edits one occurrence. |
 | `/me` | Profile edit, my upcoming 局, logout. |
-| `/admin` | Admins only: approve or reject pending newcomers, paste group members' WeChat names, see who has registered, remove unused names. |
+| `/admin` | Admins only: add a member directly by email, approve or reject pending newcomers, paste group members' WeChat names, see who has registered, remove unused names. Admins also get the host controls on every event page. |
 
 `src/api.ts` is the whole contract with the backend; its types mirror `backend/src/services/*.ts`.
 

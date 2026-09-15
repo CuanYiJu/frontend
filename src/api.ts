@@ -54,6 +54,8 @@ export interface EventSummary {
   waitlistCount: number;
   myStatus: RegistrationStatus | null;
   isHost: boolean;
+  /** Host or admin: may edit, cancel, remove players. */
+  canManage: boolean;
   isPast: boolean;
 }
 
@@ -136,6 +138,8 @@ export const api = {
   addInviteNames: (names: string) => request<{ added: InviteName[]; duplicates: string[] }>('POST', '/api/admin/invite-names', { names }),
   removeInviteName: (id: string) => request<void>('DELETE', `/api/admin/invite-names/${id}`),
   listRequests: () => request<{ requests: ApprovalRequest[] }>('GET', '/api/admin/requests'),
+  addMember: (input: { email: string; wechatName: string; nickname?: string | null }) =>
+    request<{ profile: Profile; email: string; created: boolean }>('POST', '/api/admin/members', input),
   approveRequest: (userId: string) => request<{ profile: Profile }>('POST', `/api/admin/requests/${userId}/approve`, {}),
   rejectRequest: (userId: string, note: string | null) => request<{ profile: Profile }>('POST', `/api/admin/requests/${userId}/reject`, { note }),
   listEvents: (scope: ListScope) => request<{ events: EventSummary[] }>('GET', `/api/events?scope=${scope}`),

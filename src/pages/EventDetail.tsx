@@ -146,7 +146,7 @@ export function EventDetailPage() {
           </div>
         )}
 
-        {event.isHost && event.status === 'open' ? (
+        {event.canManage && event.status === 'open' ? (
           <div className="row" style={{ gap: 10 }}>
             <Link to={`/events/${id}/edit`} className="btn secondary small">
               编辑
@@ -171,7 +171,7 @@ export function EventDetailPage() {
                 {p.userId === event.host.id ? <span className="badge host">组织者</span> : null}
                 <span className="wx">微信：{p.wechatName}</span>
               </span>
-              {event.isHost && p.userId !== event.host.id && event.status === 'open' ? (
+              {event.canManage && p.userId !== event.host.id && event.status === 'open' ? (
                 <button
                   className="btn icon"
                   title="移出名单"
@@ -204,7 +204,7 @@ export function EventDetailPage() {
                     {p.nickname}
                     <span className="wx">微信：{p.wechatName}</span>
                   </span>
-                  {event.isHost && event.status === 'open' ? (
+                  {event.canManage && event.status === 'open' ? (
                     <button
                       className="btn icon"
                       title="移出候补"
