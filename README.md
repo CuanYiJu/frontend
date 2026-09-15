@@ -22,7 +22,7 @@ npm run check      # tsc + tests + production build → dist/
 |---|---|
 | `/login` | Email → magic link / 6-digit code. Shows a hint inside WeChat's browser. |
 | `/onboarding` | First login: your WeChat name (checked against the admin's member list), site nickname. Also the waiting / rejected page while an unlisted name is in the approval queue. |
-| `/` | Upcoming 局 with tabs 即将开始 / 我参与的 / 已结束 and a 固定局 / 临时局 filter. |
+| `/` | Search bar (title, games, description, location, host and participant names; past events only those you attended), then upcoming 局 with tabs 即将开始 / 我参与的 / 已结束 and a 固定局 / 临时局 filter. |
 | `/events/new` | Post a 局: 临时局 (once) or 固定局 (weekly, N weeks). |
 | `/events/:id` | Details, participants and waitlist, 报名 / 加入候补 / 退出, 复制分享 text for the group chat. Host: 编辑, 取消, remove a player. |
 | `/events/:id/edit` | Host edits one occurrence. |

@@ -139,6 +139,7 @@ export const api = {
   approveRequest: (userId: string) => request<{ profile: Profile }>('POST', `/api/admin/requests/${userId}/approve`, {}),
   rejectRequest: (userId: string, note: string | null) => request<{ profile: Profile }>('POST', `/api/admin/requests/${userId}/reject`, { note }),
   listEvents: (scope: ListScope) => request<{ events: EventSummary[] }>('GET', `/api/events?scope=${scope}`),
+  searchEvents: (q: string) => request<{ events: EventSummary[] }>('GET', `/api/events/search?q=${encodeURIComponent(q)}`),
   getEvent: (id: string) => request<{ event: EventDetail }>('GET', `/api/events/${id}`),
   createEvent: (input: EventInput) => request<{ events: EventSummary[] }>('POST', '/api/events', input),
   updateEvent: (id: string, patch: Partial<Omit<EventInput, 'kind' | 'repeatWeeks'>>) =>

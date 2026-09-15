@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router';
 import { ApiError, api, type EventKind, type EventSummary, type ListScope } from '../api';
 import { EventCard } from '../components/EventCard';
 import { ErrorBanner } from '../components/Field';
+import { SearchBar } from '../components/SearchBar';
 
 const SCOPES: { key: ListScope; label: string }[] = [
   { key: 'upcoming', label: '即将开始' },
@@ -20,20 +21,28 @@ export function HomePage() {
   const [params, setParams] = useSearchParams();
   const scope = (SCOPES.find((s) => s.key === params.get('scope'))?.key ?? 'upcoming') as ListScope;
   const kind = (KINDS.find((k) => k.key === params.get('kind'))?.key ?? 'all') as EventKind | 'all';
+  const query = (params.get('q') ?? '').trim();
   const [events, setEvents] = useState<EventSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
     setEvents(null);
-    api
-      .listEvents(scope)
+    setError(null);
+    (query ? api.searchEvents(query) : api.listEvents(scope))
       .then((r) => alive && setEvents(r.events))
       .catch((err) => alive && setError(err instanceof ApiError ? err.message : '加载失败。'));
     return () => {
       alive = false;
     };
-  }, [scope]);
+  }, [scope, query]);
+
+  const setQuery = (q: string) => {
+    const next = new URLSearchParams(params);
+    if (q.trim()) next.set('q', q.trim());
+    else next.delete('q');
+    setParams(next, { replace: true });
+  };
 
   const setParam = (key: string, value: string) => {
     const next = new URLSearchParams(params);
@@ -46,8 +55,34 @@ export function HomePage() {
   const upcoming = visible?.filter((e) => !e.isPast) ?? [];
   const past = visible?.filter((e) => e.isPast) ?? [];
 
+  if (query) {
+    return (
+      <>
+        <SearchBar value={query} onChange={setQuery} />
+        <ErrorBanner message={error} />
+        {visible === null && !error ? <p className="muted center">搜索中…</p> : null}
+        {visible !== null ? (
+          <p className="muted small">
+            搜到 {visible.length} 个局。已结束的局只显示你参加过的。
+          </p>
+        ) : null}
+        {visible !== null && visible.length === 0 ? <div className="empty">没有找到「{query}」相关的局。</div> : null}
+        <div className="stack">
+          {upcoming.map((e) => (
+            <EventCard key={e.id} event={e} />
+          ))}
+          {past.length > 0 ? <h2>已结束 / 已取消</h2> : null}
+          {past.map((e) => (
+            <EventCard key={e.id} event={e} />
+          ))}
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
+      <SearchBar value={query} onChange={setQuery} />
       <div className="tabs" role="tablist">
         {SCOPES.map((s) => (
           <button key={s.key} role="tab" className={`chip${scope === s.key ? ' active' : ''}`} onClick={() => setParam('scope', s.key)}>
